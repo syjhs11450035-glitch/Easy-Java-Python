@@ -1,6 +1,5 @@
-# <p align="center"><img src="./logo/1.png" width="80" height="80" style="vertical-align:middle"> EJP IDE v1.0 beta <img src="./logo/2.png" width="80" height="80" style="vertical-align:middle"></p>
-
-<p align="center"><strong>「 Java 身軀，Python 靈魂 」</strong></p>
+# EJP IDE v1.0 beta 
+> **「 Java 身軀，Python 靈魂 」**
 
 ---
 
@@ -9,8 +8,12 @@
   <img src="https://img.shields.io/badge/Engine-6--bit%20Enhanced-ff79c6?style=for-the-badge" alt="編譯引擎">
   <img src="https://img.shields.io/badge/Syntax-Python-blue?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/Syntax-Java-orange?style=for-the-badge&logo=openjdk" alt="Java">
-  <img src="https://img.shields.io/badge/Syntax-C%20%2F%20C%2B%2B-00599C?style=for-the-badge&logo=c%2B%2B" alt="C++">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License">
 </p>
+
+> ### 📦 獲取專案
+> **快速克隆此儲存庫：**
+> `git clone https://github.com/syjhs11450035-glitch/Easy-Java-Python.git`
 
 ---
 
@@ -29,6 +32,4 @@
 ### 專案理念
 **開放** | **簡潔** | **強大**
 
-
-
-###### © 2026 - 2036 EJP Project. All rights reserved.# Easy-Java-Python
+###### © 2026 - 2036 EJP Project. All rights reserved.

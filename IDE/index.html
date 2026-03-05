@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>EJP Web IDE</title>
+    
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/mode/simple.min.js"></script>
+
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #282a36; color: white; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .toolbar { background: #44475a; padding: 10px 20px; display: flex; gap: 12px; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10; }
+        .main { display: flex; flex: 1; overflow: hidden; }
+        .editor-container { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #44475a; }
+        .CodeMirror { flex: 1; height: auto; font-size: 16px; line-height: 1.5; }
+        
+        /* 預覽與控制台 */
+        .preview { width: 420px; background: #282a36; display: flex; flex-direction: column; }
+        #display-canvas { background: #1a1a1a; margin: 15px; height: 320px; border-radius: 8px; display: grid; border: 2px solid #6272a4; overflow: hidden; position: relative; }
+        #console { flex: 1; background: #000; color: #50fa7b; padding: 12px; font-size: 13px; overflow-y: auto; font-family: 'Fira Code', 'Consolas', monospace; border-top: 4px solid #44475a; }
+        
+        /* 按鈕樣式 */
+        button { background: #6272a4; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 13px; }
+        button:hover { background: #bd93f9; transform: translateY(-1px); }
+        .btn-run { background: #50fa7b; color: #282a36; }
+        .btn-run:hover { background: #69ff94; }
+        .btn-compile { background: #ff79c6; color: white; }
+        .filename-input { background: #282a36; border: 1px solid #6272a4; color: #f8f8f2; padding: 6px 10px; border-radius: 4px; width: 140px; outline: none; }
+        
+        .grid-pixel { border: 0.1px solid rgba(255,255,255,0.05); box-sizing: border-box; }
+    </style>
+</head>
+<body>
+
+<div class="toolbar">
+    <strong style="color: #dbdbdb; margin-right: 10px;">EJP IDE</strong>
+    <input type="text" id="filename" class="filename-input" value="project.EJP">
+    <button onclick="downloadSource()">💾 儲存</button>
+    <button class="btn-compile" id="compile-btn" py-click="compile_code">📦 編譯</button>
+    <button class="btn-run" id="run-btn" py-click="run_code">▶ 執行</button>
+    <div style="margin-left: auto; font-size: 11px; opacity: 0.5;">online IDE</div>
+</div>
+
+<div class="main">
+    <div class="editor-container">
+        <textarea id="editor-text">## EJP 函數與 rep 循環測試 ##
+## 目的：在 5x5 畫布畫出一條對角線 ##
+
+def("myArt", x, y){
+    log("正在座標繪製:", %x%, ",", %y%);
+    canva(set, %x%, %y%, "ff79c6");
+}
+
+canva(add, 5, 5);
+sv(%"i"%, 0);
+
+rep(F, 5){
+    myArt(%i%, %i%);
+    sv(%"i"%, %i% + 1);
+}
+
+log("繪製完成！");</textarea>
+    </div>
+    
+    <div class="preview">
+        <div id="display-canvas"></div>
+        <div id="console"></div>
+    </div>
+</div>
+
+<script type="py">
+from pyscript import document, window
+import re
+
+CHAR_MAP = { 'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7, 'i': 8, 'j': 9, 'k': 10, 'l': 11, 'm': 12, 'n': 13, 'o': 14, 'p': 15, 'q': 16, 'r': 17, 's': 18, 't': 19, 'u': 20, 'v': 21, 'w': 22, 'x': 23, 'y': 24, 'z': 25, '0': 26, '1': 27, '2': 28, '3': 29, '4': 30, '5': 31, '6': 32, '7': 33, '8': 34, '9': 35, '=': 36, '<': 37, '>': 38, ';': 39, '(': 40, ')': 41, '{': 42, '}': 43, '[': 44, ']': 45, ',': 46, '"': 47, "'": 48, '%': 49, '#': 50, '\\': 51, '^': 52, '+': 53, '-': 54, '~': 55, " ": 56, 'Ⓔ': 59, 'Ⓑ': 60, 'Ⓢ': 61, 'Ⓐ': 62, 'Ⓤ': 63 }
+
+def log_to_console(*args):
+    msg = " ".join(map(str, args))
+    cons = document.getElementById("console")
+    cons.innerHTML += f"<div>> {msg}</div>"
+    cons.scrollTop = cons.scrollHeight
+
+def web_canva(action, *args):
+    canvas_div = document.getElementById("display-canvas")
+    if action == "add":
+        canvas_div.innerHTML = ""
+        w, h = int(args[0]), int(args[1])
+        canvas_div.style.gridTemplateColumns = f"repeat({w}, 1fr)"
+        canvas_div.style.gridTemplateRows = f"repeat({h}, 1fr)"
+        canvas_div.dataset.cols = w
+        for _ in range(w * h):
+            d = document.createElement("div")
+            d.className = "grid-pixel"
+            canvas_div.appendChild(d)
+    elif action == "set":
+        x, y, color = int(args[0]), int(args[1]), str(args[2]).strip("'").strip('"')
+        if len(color) == 3: color = "".join([c*2 for c in color])
+        cells = canvas_div.children
+        cols = int(canvas_div.dataset.cols)
+        idx = y * cols + x
+        if 0 <= idx < len(cells):
+            cells[idx].style.backgroundColor = f"#{color}"
+            cells[idx].style.boxShadow = f"inset 0 0 5px #{color}, 0 0 10px #{color}"
+
+def run_code(event):
+    document.getElementById("console").innerHTML = ""
+    raw_text = window.editor.getValue()
+    
+    lines = raw_text.split('\n')
+    py_code = ["vars_dict = {}"]
+    indent = 0
+    CANVA_KEYWORDS = ['add', 'set', 'back']
+    
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith("##"): continue
+        if line == "}":
+            indent = max(0, indent - 1)
+            continue
+            
+        # 轉換 def
+        func_match = re.match(r'def\("(.*?)"\s*,\s*(.*?)\s*,\s*(.*?)\)\s*\{', line)
+        if func_match:
+            name, p1, p2 = func_match.groups()
+            py_code.append("    " * indent + f"def {name}({p1}, {p2}):")
+            indent += 1
+            continue
+
+        # 轉換 rep
+        rep_match = re.match(r'rep\((T|F)\s*,\s*(.*?)\)\s*\{', line)
+        if rep_match:
+            mode, val = rep_match.groups()
+            if mode == "T":
+                py_code.append("    " * indent + "while True:")
+            else:
+                # 處理次數變數
+                count_expr = val.strip()
+                if count_expr.startswith("%") and count_expr.endswith("%"):
+                    vname = count_expr.strip("%")
+                    count_expr = f'int(vars_dict.get("{vname}", 0))'
+                py_code.append("    " * indent + f"for _ in range(int({count_expr})):")
+            indent += 1
+            continue
+
+        # 處理 sv
+        line = re.sub(r'sv\(%"(.*?)"%,\s*(.*?)\)', r'vars_dict["\1"] = \2', line)
+        
+        # 處理 %var% 調用，排除畫布關鍵字
+        def var_sub(m):
+            v = m.group(1)
+            if v in CANVA_KEYWORDS: return v
+            return f'(vars_dict["{v}"] if "{v}" in vars_dict else {v})'
+        line = re.sub(r'%(.*?)%', var_sub, line)
+
+        # 保護 canva 關鍵字：將 add 轉為 "add"
+        for kw in CANVA_KEYWORDS:
+            line = re.sub(rf'\((\s*){kw}(\s*),', rf'("\1{kw}\2",', line)
+
+        py_code.append("    " * indent + line.replace(';', ''))
+
+    final_py = "\n".join(py_code)
+    exec_globals = {"log": log_to_console, "canva": web_canva, "T": True, "F": False, "int": int}
+    
+    try:
+        exec(final_py, exec_globals)
+        log_to_console("程序執行完成。")
+    except Exception as e:
+        log_to_console(f"執行錯誤: {e}", True)
+
+def compile_code(event):
+    raw_text = window.editor.getValue()
+    log_to_console("啟動 6-bit 編譯流程...")
+    text = re.sub(r'##.*?##', '', raw_text, flags=re.DOTALL)
+    text = text.replace("import ", "Ⓐ").replace("end ", "Ⓔ").replace("small ", "Ⓢ").replace("big ", "Ⓑ")
+    
+    bit_list = []
+    for char in text:
+        if char in CHAR_MAP: bit_list.append(CHAR_MAP[char])
+        else:
+            val = ord(char)
+            bit_list.extend([63, (val >> 12) & 0x3F, (val >> 6) & 0x3F, val & 0x3F])
+    
+    bin_s = "".join([format(b, '06b') for b in bit_list])
+    while len(bin_s) % 8 != 0: bin_s += "0"
+    bytes_data = bytearray([int(bin_s[i:i+8], 2) for i in range(0, len(bin_s), 8)])
+    
+    fname = document.getElementById("filename").value.split('.')[0] + ".EJP"
+    window.saveBinaryFile(bytes_data, fname)
+    log_to_console(f"二進位檔案已匯出: {fname}")
+</script>
+
+<script>
+    // CodeMirror Custom Mode
+    CodeMirror.defineSimpleMode("ejp", {
+        start: [
+            {regex: /##.*/, token: "comment"},
+            {regex: /"(?:[^\\]|\\.)*?"/, token: "string"},
+            {regex: /(?:def|sv|rep|canva|log)(?=\()/, token: "keyword"},
+            {regex: /[a-zA-Z0-9_]+(?=\()/, token: "variable-3"}, 
+            {regex: /%[a-zA-Z0-9_-]+%/, token: "variable-2"},
+            {regex: /\{/, indent: true},
+            {regex: /\}/, dedent: true}
+        ]
+    });
+
+    var editor = CodeMirror.fromTextArea(document.getElementById("editor-text"), {
+        lineNumbers: true,
+        mode: "ejp",
+        theme: "dracula",
+        tabSize: 4,
+        indentUnit: 4,
+        lineWrapping: true,
+        matchBrackets: true
+    });
+    window.editor = editor;
+
+    function downloadSource() {
+        const text = window.editor.getValue();
+        const blob = new Blob([text], { type: 'text/plain' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = document.getElementById('filename').value;
+        a.click();
+    }
+
+    window.saveBinaryFile = function(pyBytearray, filename) {
+        const uint8Array = new Uint8Array(pyBytearray);
+        const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = filename;
+        a.click();
+    }
+</script>
+
+</body>
+</html>
