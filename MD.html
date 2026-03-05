@@ -1,0 +1,1575 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown 閱讀器 Pro - 完整版</title>
+    
+    <!-- ========== 線上資源 + 本地備份 ========== -->
+    <!-- 雙重保障：線上CDN + 本地備份 -->
+    
+    <!-- 1. Font Awesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+          onerror="this.onerror=null;this.href='./Font Awesome.css';">
+    <link rel="stylesheet" href="./Font Awesome.css" 
+          onerror="console.log('本地Font Awesome加載失敗')">
+    
+    <!-- 2. Highlight.js 語法高亮 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"
+            onerror="loadLocalScript('highlight')"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css"
+          onerror="this.onerror=null;this.href='./Highlight.css';">
+    <link rel="stylesheet" href="./Highlight.css" 
+          onerror="console.log('本地Highlight.css加載失敗')">
+    
+    <!-- 3. Marked.js Markdown 解析器 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"
+            onerror="loadLocalScript('marked')"></script>
+    <script src="./Markdown.js" 
+            onerror="console.log('本地Markdown.js加載失敗')"></script>
+    
+    <!-- 4. MathJax (數學公式支持) -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"
+            onerror="loadLocalScript('polyfill')"></script>
+    <script id="MathJax-script" async 
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
+            onerror="loadLocalScript('mathjax')"></script>
+    
+    <!-- 5. emoji 支持 -->
+    <script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"
+            onerror="loadLocalScript('twemoji')"></script>
+    <script src="./emoji.js" crossorigin="anonymous"
+            onerror="console.log('本地emoji.js加載失敗')"></script>
+    
+    <style>
+        /* 簡化版 CSS - 只保留必要樣式 */
+        :root {
+            --primary: #4b6cb7;
+            --secondary: #182848;
+            --bg: #f5f7fa;
+            --text: #333;
+            --border: #ddd;
+            --card: white;
+        }
+        
+        [data-theme="dark"] {
+            --primary: #6c8ee6;
+            --secondary: #2a3d6e;
+            --bg: #121212;
+            --text: #e0e0e0;
+            --border: #444;
+            --card: #1e1e1e;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Microsoft JhengHei', sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        header {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i { font-size: 24px; }
+        .logo h1 { font-size: 20px; }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        
+        .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary { background: var(--primary); }
+        .btn-success { background: #28a745; }
+        .btn-warning { background: #ffc107; color: #000; }
+        .btn-info { background: #17a2b8; }
+        
+        .content-wrapper {
+            display: flex;
+            min-height: 600px;
+            border-top: 1px solid var(--border);
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper { flex-direction: column; }
+        }
+        
+        .input-section, .output-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .section-header {
+            padding: 12px 20px;
+            background: rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .section-header h2 {
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-info {
+            font-size: 12px;
+            opacity: 0.8;
+            background: rgba(0,0,0,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .input-area {
+            flex: 1;
+            width: 100%;
+            padding: 20px;
+            border: none;
+            resize: none;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            background: var(--card);
+            color: var(--text);
+            outline: none;
+        }
+        
+        .output-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        /* Markdown 基本樣式 */
+        .markdown-content h1,
+        .markdown-content h2,
+        .markdown-content h3 {
+            margin: 1em 0;
+            padding-bottom: 0.3em;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .markdown-content h1 { font-size: 2em; }
+        .markdown-content h2 { font-size: 1.5em; }
+        
+        .markdown-content p { margin: 1em 0; }
+        .markdown-content ul, 
+        .markdown-content ol { margin: 1em 0; padding-left: 2em; }
+        
+        .markdown-content code {
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.9em;
+        }
+        
+        .markdown-content pre {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1em 0;
+            position: relative;
+        }
+        
+        .markdown-content pre code { background: none; padding: 0; }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--primary);
+            margin: 1em 0;
+            padding: 0.5em 1em;
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .markdown-content table {
+            border-collapse: collapse;
+            margin: 1em 0;
+            width: 100%;
+        }
+        
+        .markdown-content th,
+        .markdown-content td {
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+        }
+        
+        .markdown-content th {
+            background: rgba(0,0,0,0.05);
+        }
+        
+        .markdown-content a {
+            color: var(--primary);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--primary);
+        }
+        
+        .markdown-content a:hover {
+            border-bottom-style: solid;
+        }
+        
+        .markdown-content img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin: 1em 0;
+        }
+        
+        /* 複製按鈕 */
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0;
+            font-size: 12px;
+        }
+        
+        .markdown-content pre:hover .copy-btn {
+            opacity: 1;
+        }
+        
+        /* 簡單的工具欄 */
+        .toolbar {
+            display: flex;
+            gap: 5px;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+        
+        .tool-btn {
+            padding: 6px 10px;
+            background: rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* 設定面板 */
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100vh;
+            background: var(--card);
+            box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.3s;
+        }
+        
+        .settings-panel.active {
+            transform: translateX(0);
+        }
+        
+        .settings-content {
+            padding: 20px;
+        }
+        
+        .settings-group {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .settings-group h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .setting-item {
+            margin-bottom: 10px;
+        }
+        
+        .setting-item label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .color-picker {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .color-option {
+            width: 100%;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+        
+        .color-option.active {
+            border-color: var(--text);
+        }
+        
+        /* 符號面板 */
+        .symbols-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: var(--card);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            z-index: 1001;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .symbols-panel.active {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .symbols-header {
+            padding: 15px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .symbols-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 10px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        
+        .symbol-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .symbol-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        /* 匯出對話框 */
+        .export-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .export-modal.active {
+            display: flex;
+        }
+        
+        .export-content {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .export-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .export-header h3 {
+            color: var(--primary);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text);
+        }
+        
+        /* 通知 */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 6px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .notification.error { background: #dc3545; }
+        .notification.warning { background: #ffc107; color: #000; }
+        
+        /* 加載動畫 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: var(--text);
+            opacity: 0.7;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 簡化浮動按鈕 */
+        .floating-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .floating-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            opacity: 0.7;
+            border-top: 1px solid var(--border);
+        }
+    </style>
+    
+    <script>
+        // 加載本地備份腳本的函數
+        function loadLocalScript(name) {
+            console.log('正在加載本地備份:', name);
+            const scripts = {
+                'highlight': './Highlight.js',
+                'marked': './Markdown.js',
+                'polyfill': './polyfill.js',
+                'mathjax': './MathJax.js',
+                'twemoji': './emoji.js'
+            };
+            
+            if (scripts[name]) {
+                const script = document.createElement('script');
+                script.src = scripts[name];
+                document.head.appendChild(script);
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-book-reader"></i>
+                <h1>Markdown 閱讀器 Pro</h1>
+            </div>
+            <div class="controls">
+                <button class="btn btn-primary" id="openFileBtn">
+                    <i class="fas fa-folder-open"></i>開啟
+                </button>
+                <button class="btn btn-success" id="saveFileBtn">
+                    <i class="fas fa-save"></i>保存
+                </button>
+                <button class="btn btn-warning" id="exportBtn">
+                    <i class="fas fa-download"></i>匯出
+                </button>
+                <button class="btn" id="themeBtn">
+                    <i class="fas fa-moon"></i>主題
+                </button>
+                <button class="btn" id="settingsBtn">
+                    <i class="fas fa-cog"></i>設定
+                </button>
+                <button class="btn" id="symbolsBtn">
+                    <i class="fas fa-icons"></i>符號
+                </button>
+            </div>
+        </header>
+        
+        <div class="content-wrapper">
+            <!-- 編輯區 -->
+            <div class="input-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-edit"></i>編輯區</h2>
+                    <div class="file-info" id="fileInfo">新文件</div>
+                </div>
+                <div class="toolbar">
+                    <button class="tool-btn" data-action="h1"><i class="fas fa-heading"></i>H1</button>
+                    <button class="tool-btn" data-action="h2">H2</button>
+                    <button class="tool-btn" data-action="bold"><i class="fas fa-bold"></i>粗體</button>
+                    <button class="tool-btn" data-action="italic"><i class="fas fa-italic"></i>斜體</button>
+                    <button class="tool-btn" data-action="link"><i class="fas fa-link"></i>連結</button>
+                    <button class="tool-btn" data-action="code"><i class="fas fa-code"></i>代碼</button>
+                    <button class="tool-btn" data-action="clear"><i class="fas fa-trash"></i>清空</button>
+                </div>
+                <textarea id="markdownInput" class="input-area" placeholder="輸入 Markdown 內容..."></textarea>
+            </div>
+            
+            <!-- 預覽區 -->
+            <div class="output-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-eye"></i>預覽區</h2>
+                    <div class="file-info">即時更新</div>
+                </div>
+                <div id="markdownOutput" class="output-area">
+                    <div class="loading">準備中...</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Markdown 閱讀器 Pro | 完整版 | 雙重資源保障</p>
+        </footer>
+    </div>
+    
+    <!-- 隱藏元素 -->
+    <input type="file" id="fileInput" accept=".md,.markdown,.txt,.html" style="display:none;">
+    
+    <!-- 浮動按鈕 -->
+    <button class="floating-btn" id="copyBtn" title="複製內容">
+        <i class="fas fa-copy"></i>
+    </button>
+    
+    <!-- 通知 -->
+    <div class="notification" id="notification"></div>
+    
+    <!-- 設定面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="section-header">
+            <h2><i class="fas fa-cog"></i>設定</h2>
+            <button class="btn" id="closeSettingsBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="settings-content">
+            <!-- 編輯器設定 -->
+            <div class="settings-group">
+                <h3><i class="fas fa-edit"></i>編輯器設定</h3>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="autoSave" checked> 自動保存
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="lineNumbers"> 顯示行號
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="autoComplete"> 自動完成
+                    </label>
+                </div>
+            </div>
+            
+            <!-- 主題設定 -->
+            <div class="settings-group">
+                <h3><i class="fas fa-palette"></i>主題顏色</h3>
+                <div class="color-picker">
+                    <div class="color-option active" style="background: #4b6cb7;" data-color="#4b6cb7" data-secondary="#182848"></div>
+                    <div class="color-option" style="background: #27ae60;" data-color="#27ae60" data-secondary="#2ecc71"></div>
+                    <div class="color-option" style="background: #e74c3c;" data-color="#e74c3c" data-secondary="#c0392b"></div>
+                    <div class="color-option" style="background: #f39c12;" data-color="#f39c12" data-secondary="#e67e22"></div>
+                    <div class="color-option" style="background: #8e44ad;" data-color="#8e44ad" data-secondary="#9b59b6"></div>
+                    <div class="color-option" style="background: #2c3e50;" data-color="#2c3e50" data-secondary="#34495e"></div>
+                    <div class="color-option" style="background: #1abc9c;" data-color="#1abc9c" data-secondary="#16a085"></div>
+                    <div class="color-option" style="background: #d35400;" data-color="#d35400" data-secondary="#e67e22"></div>
+                </div>
+            </div>
+            
+            <!-- 字體設定 -->
+            <div class="settings-group">
+                <h3><i class="fas fa-font"></i>字體設定</h3>
+                <div class="setting-item">
+                    <label>字體大小</label>
+                    <select id="fontSize" class="form-control">
+                        <option value="12">12px</option>
+                        <option value="14" selected>14px</option>
+                        <option value="16">16px</option>
+                        <option value="18">18px</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <label>字體家族</label>
+                    <select id="fontFamily" class="form-control">
+                        <option value="Consolas, monospace" selected>Consolas</option>
+                        <option value="'Microsoft JhengHei', sans-serif">微軟正黑體</option>
+                        <option value="'Courier New', monospace">Courier New</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- 預覽設定 -->
+            <div class="settings-group">
+                <h3><i class="fas fa-eye"></i>預覽設定</h3>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="syncScroll" checked> 同步滾動
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="mathSupport"> 數學公式支持
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label>
+                        <input type="checkbox" id="emojiSupport" checked> Emoji支持
+                    </label>
+                </div>
+            </div>
+            
+            <button class="btn btn-success" id="saveSettingsBtn" style="width: 100%;">
+                <i class="fas fa-save"></i>保存設定
+            </button>
+            <button class="btn" id="resetSettingsBtn" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-redo"></i>恢復預設
+            </button>
+        </div>
+    </div>
+    
+    <!-- 符號面板 -->
+    <div class="symbols-panel" id="symbolsPanel">
+        <div class="symbols-header">
+            <h3><i class="fas fa-icons"></i>選擇符號</h3>
+            <button class="btn" id="closeSymbolsBtn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="symbols-grid" id="symbolsGrid">
+            <!-- 符號會由JavaScript動態生成 -->
+        </div>
+    </div>
+    
+    <!-- 匯出對話框 -->
+    <div class="export-modal" id="exportModal">
+        <div class="export-content">
+            <div class="export-header">
+                <h3><i class="fas fa-download"></i>匯出選項</h3>
+                <button class="btn" id="closeExportBtn"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="form-group">
+                <label>匯出格式</label>
+                <select id="exportFormat" class="form-control">
+                    <option value="html">HTML 文件</option>
+                    <option value="markdown">Markdown 文件</option>
+                    <option value="html-to-md">HTML 轉 Markdown</option>
+                    <option value="pdf">PDF 文件</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="htmlToMdOptions" style="display: none;">
+                <label>HTML 來源</label>
+                <textarea id="htmlInput" class="form-control" rows="5" placeholder="貼上HTML內容或上傳HTML文件..."></textarea>
+                <button class="btn btn-info" id="uploadHtmlBtn" style="margin-top: 10px; width: 100%;">
+                    <i class="fas fa-upload"></i>上傳HTML文件
+                </button>
+            </div>
+            
+            <div class="form-group">
+                <label>包含內容</label>
+                <div style="margin-top: 10px;">
+                    <label style="display: block; margin-bottom: 5px;">
+                        <input type="checkbox" id="exportTheme" checked> 主題設定
+                    </label>
+                    <label style="display: block; margin-bottom: 5px;">
+                        <input type="checkbox" id="exportStyles" checked> 樣式表
+                    </label>
+                    <label style="display: block; margin-bottom: 5px;">
+                        <input type="checkbox" id="exportScripts"> JavaScript
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>檔案名稱</label>
+                <input type="text" id="exportFileName" class="form-control" value="markdown-document">
+            </div>
+            
+            <button class="btn btn-success" id="confirmExportBtn" style="width: 100%;">
+                <i class="fas fa-download"></i>開始匯出
+            </button>
+        </div>
+    </div>
+    
+    <!-- 隱藏的HTML文件上傳 -->
+    <input type="file" id="htmlFileInput" accept=".html,.htm" style="display:none;">
+
+    <!-- 主要 JavaScript -->
+    <script>
+        // ========== 簡單的初始化 ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // 基本元素
+            const elements = {
+                markdownInput: document.getElementById('markdownInput'),
+                markdownOutput: document.getElementById('markdownOutput'),
+                fileInput: document.getElementById('fileInput'),
+                htmlFileInput: document.getElementById('htmlFileInput'),
+                fileInfo: document.getElementById('fileInfo'),
+                openFileBtn: document.getElementById('openFileBtn'),
+                saveFileBtn: document.getElementById('saveFileBtn'),
+                exportBtn: document.getElementById('exportBtn'),
+                themeBtn: document.getElementById('themeBtn'),
+                settingsBtn: document.getElementById('settingsBtn'),
+                symbolsBtn: document.getElementById('symbolsBtn'),
+                copyBtn: document.getElementById('copyBtn'),
+                notification: document.getElementById('notification'),
+                settingsPanel: document.getElementById('settingsPanel'),
+                closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+                symbolsPanel: document.getElementById('symbolsPanel'),
+                closeSymbolsBtn: document.getElementById('closeSymbolsBtn'),
+                symbolsGrid: document.getElementById('symbolsGrid'),
+                exportModal: document.getElementById('exportModal'),
+                closeExportBtn: document.getElementById('closeExportBtn'),
+                exportFormat: document.getElementById('exportFormat'),
+                htmlToMdOptions: document.getElementById('htmlToMdOptions'),
+                htmlInput: document.getElementById('htmlInput'),
+                uploadHtmlBtn: document.getElementById('uploadHtmlBtn'),
+                exportFileName: document.getElementById('exportFileName'),
+                confirmExportBtn: document.getElementById('confirmExportBtn'),
+                saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+                resetSettingsBtn: document.getElementById('resetSettingsBtn'),
+                autoSave: document.getElementById('autoSave'),
+                lineNumbers: document.getElementById('lineNumbers'),
+                autoComplete: document.getElementById('autoComplete'),
+                fontSize: document.getElementById('fontSize'),
+                fontFamily: document.getElementById('fontFamily'),
+                syncScroll: document.getElementById('syncScroll'),
+                mathSupport: document.getElementById('mathSupport'),
+                emojiSupport: document.getElementById('emojiSupport'),
+                exportTheme: document.getElementById('exportTheme'),
+                exportStyles: document.getElementById('exportStyles'),
+                exportScripts: document.getElementById('exportScripts'),
+                colorPicker: document.querySelector('.color-picker')
+            };
+            
+            // 狀態
+            let currentFile = null;
+            let isDark = localStorage.getItem('darkMode') === 'true';
+            let settings = {};
+            let autoSaveTimer = null;
+            
+            // 符號庫
+            const symbols = [
+                '★', '☆', '✪', '✯', '✦', '✧', '❂', '✿', '❀', '❁',
+                '❤', '💛', '💚', '💙', '💜', '💖', '🎯', '✨', '🔥', '⭐',
+                '✓', '✔', '✗', '✘', '⚠', '❗', '❓', '❔', '❕', '©',
+                '®', '™', '℃', '℉', '€', '£', '¥', '$', '¢', '₹',
+                '←', '→', '↑', '↓', '↔', '↕', '⇐', '⇒', '⇑', '⇓',
+                'α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'λ', 'μ',
+                '∑', '∏', '∫', '∂', '∇', '∞', '√', '≈', '≠', '≡',
+                '≤', '≥', '≪', '≫', '∈', '∉', '⊂', '⊃', '∩', '∪',
+                '∀', '∃', '∄', '∴', '∵', '∎', '∮', '∯', '∰', '∠',
+                '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩',
+                'Ⓐ', 'Ⓑ', 'Ⓒ', 'Ⓓ', 'Ⓔ', 'Ⓕ', 'Ⓖ', 'Ⓗ', 'Ⓘ', 'Ⓙ'
+            ];
+            
+            // ========== 核心功能 ==========
+            
+            // 1. 主題切換
+            function toggleTheme() {
+                isDark = !isDark;
+                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+                localStorage.setItem('darkMode', isDark);
+                
+                const icon = elements.themeBtn.querySelector('i');
+                icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                
+                showMsg(`切換到${isDark ? '暗色' : '亮色'}主題`);
+            }
+            
+            // 2. Markdown 轉換
+            function convertMarkdown() {
+                const text = elements.markdownInput.value;
+                
+                if (!text.trim()) {
+                    elements.markdownOutput.innerHTML = '<div class="loading">等待輸入...</div>';
+                    return;
+                }
+                
+                try {
+                    // 使用 marked.js
+                    if (typeof marked !== 'undefined') {
+                        marked.setOptions({
+                            breaks: true,
+                            gfm: true,
+                            highlight: function(code) {
+                                if (typeof hljs !== 'undefined') {
+                                    return hljs.highlightAuto(code).value;
+                                }
+                                return code;
+                            }
+                        });
+                        
+                        const html = marked.parse(text);
+                        elements.markdownOutput.innerHTML = `<div class="markdown-content">${html}</div>`;
+                        
+                        // 添加複製按鈕
+                        document.querySelectorAll('pre').forEach(pre => {
+                            if (!pre.querySelector('.copy-btn')) {
+                                const btn = document.createElement('button');
+                                btn.className = 'copy-btn';
+                                btn.innerHTML = '<i class="fas fa-copy"></i>';
+                                btn.onclick = () => copyCode(pre);
+                                pre.appendChild(btn);
+                            }
+                        });
+                    } else {
+                        // 備用方案：簡單轉換
+                        const simpleHtml = text
+                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/`(.*?)`/g, '<code>$1</code>')
+                            .replace(/\n/g, '<br>');
+                        
+                        elements.markdownOutput.innerHTML = `<div class="markdown-content">${simpleHtml}</div>`;
+                    }
+                } catch (e) {
+                    elements.markdownOutput.innerHTML = `
+                        <div style="color: red; padding: 20px;">
+                            <h3>轉換錯誤</h3>
+                            <p>${e.message}</p>
+                        </div>
+                    `;
+                }
+            }
+            
+            // 3. 文件操作
+            elements.openFileBtn.onclick = () => elements.fileInput.click();
+            
+            elements.fileInput.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    elements.markdownInput.value = text;
+                    currentFile = file;
+                    elements.fileInfo.textContent = file.name;
+                    convertMarkdown();
+                    showMsg(`已載入: ${file.name}`);
+                } catch (e) {
+                    showMsg('讀取失敗', 'error');
+                }
+                
+                e.target.value = '';
+            };
+            
+            elements.saveFileBtn.onclick = function() {
+                const text = elements.markdownInput.value;
+                if (!text.trim()) {
+                    showMsg('沒有內容', 'warning');
+                    return;
+                }
+                
+                const blob = new Blob([text], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                
+                const filename = currentFile ? currentFile.name : `文件_${new Date().getTime()}.md`;
+                a.href = url;
+                a.download = filename;
+                a.click();
+                
+                URL.revokeObjectURL(url);
+                showMsg('已保存');
+            };
+            
+            // 4. 匯出功能
+            elements.exportBtn.onclick = function() {
+                elements.exportModal.classList.add('active');
+            };
+            
+            elements.exportFormat.onchange = function() {
+                const isHtmlToMd = this.value === 'html-to-md';
+                elements.htmlToMdOptions.style.display = isHtmlToMd ? 'block' : 'none';
+            };
+            
+            elements.uploadHtmlBtn.onclick = function() {
+                elements.htmlFileInput.click();
+            };
+            
+            elements.htmlFileInput.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const html = await file.text();
+                    elements.htmlInput.value = html;
+                    showMsg('HTML文件已載入');
+                } catch (error) {
+                    showMsg('讀取HTML文件失敗', 'error');
+                }
+                
+                e.target.value = '';
+            };
+            
+            elements.confirmExportBtn.onclick = function() {
+                const format = elements.exportFormat.value;
+                const filename = elements.exportFileName.value || 'document';
+                
+                if (format === 'html-to-md') {
+                    // HTML 轉 Markdown
+                    const html = elements.htmlInput.value;
+                    if (!html.trim()) {
+                        showMsg('請輸入HTML內容', 'warning');
+                        return;
+                    }
+                    
+                    const markdown = htmlToMarkdown(html);
+                    downloadFile(markdown, `${filename}.md`, 'text/markdown');
+                    showMsg('HTML已轉換為Markdown');
+                } else if (format === 'html') {
+                    // 匯出 HTML
+                    const text = elements.markdownInput.value;
+                    if (!text.trim()) {
+                        showMsg('沒有內容', 'warning');
+                        return;
+                    }
+                    
+                    let html = '';
+                    if (typeof marked !== 'undefined') {
+                        html = marked.parse(text);
+                    } else {
+                        html = text
+                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            .replace(/`(.*?)`/g, '<code>$1</code>')
+                            .replace(/\n/g, '<br>');
+                    }
+                    
+                    const fullHtml = generateExportHtml(html);
+                    downloadFile(fullHtml, `${filename}.html`, 'text/html');
+                    showMsg('HTML已匯出');
+                } else if (format === 'markdown') {
+                    // 匯出 Markdown
+                    const text = elements.markdownInput.value;
+                    if (!text.trim()) {
+                        showMsg('沒有內容', 'warning');
+                        return;
+                    }
+                    
+                    downloadFile(text, `${filename}.md`, 'text/markdown');
+                    showMsg('Markdown已匯出');
+                } else if (format === 'pdf') {
+                    showMsg('PDF匯出功能需要額外套件', 'info');
+                }
+                
+                elements.exportModal.classList.remove('active');
+            };
+            
+            // HTML 轉 Markdown 函數
+            function htmlToMarkdown(html) {
+                // 簡單的 HTML 轉 Markdown 轉換
+                return html
+                    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
+                    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
+                    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+                    .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                    .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+                    .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                    .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+                    .replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+                    .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
+                    .replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
+                    .replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, p1) => {
+                        return p1.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n') + '\n';
+                    })
+                    .replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, p1) => {
+                        let i = 1;
+                        return p1.replace(/<li[^>]*>(.*?)<\/li>/gi, (m, p1) => {
+                            return `${i++}. ${p1}\n`;
+                        }) + '\n';
+                    })
+                    .replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gis, (match, p1) => {
+                        return '> ' + p1.trim().replace(/\n/g, '\n> ') + '\n\n';
+                    })
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<[^>]*>/g, '')
+                    .replace(/&nbsp;/g, ' ')
+                    .replace(/&lt;/g, '<')
+                    .replace(/&gt;/g, '>')
+                    .replace(/&amp;/g, '&')
+                    .trim();
+            }
+            
+            function generateExportHtml(content) {
+                const includeTheme = elements.exportTheme.checked;
+                const includeStyles = elements.exportStyles.checked;
+                const includeScripts = elements.exportScripts.checked;
+                
+                let css = '';
+                let scripts = '';
+                
+                if (includeStyles) {
+                    css = `<style>
+                        body {
+                            font-family: 'Microsoft JhengHei', sans-serif;
+                            line-height: 1.8;
+                            max-width: 800px;
+                            margin: 0 auto;
+                            padding: 40px 20px;
+                            color: #333;
+                            background: #f8f9fa;
+                        }
+                        .markdown-content {
+                            background: white;
+                            padding: 40px;
+                            border-radius: 12px;
+                            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                        }
+                        pre {
+                            background: #282c34;
+                            color: #abb2bf;
+                            padding: 15px;
+                            border-radius: 8px;
+                            overflow-x: auto;
+                        }
+                        code {
+                            background: #f5f5f5;
+                            padding: 2px 5px;
+                            border-radius: 3px;
+                        }
+                        blockquote {
+                            border-left: 4px solid #3498db;
+                            padding-left: 15px;
+                            margin-left: 0;
+                            background: #f8f9fa;
+                        }
+                    </style>`;
+                }
+                
+                if (includeScripts) {
+                    scripts = `<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"><\/script>
+                    <script>hljs.highlightAll();<\/script>`;
+                }
+                
+                return `<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${elements.exportFileName.value}</title>
+    ${css}
+</head>
+<body>
+    <div class="markdown-content">
+        ${content}
+    </div>
+    ${scripts}
+</body>
+</html>`;
+            }
+            
+            function downloadFile(content, filename, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+            
+            // 5. 設定管理
+            function loadSettings() {
+                const saved = localStorage.getItem('md-reader-settings');
+                if (saved) {
+                    settings = JSON.parse(saved);
+                    
+                    // 載入設定值
+                    elements.autoSave.checked = settings.autoSave !== false;
+                    elements.lineNumbers.checked = settings.lineNumbers || false;
+                    elements.autoComplete.checked = settings.autoComplete || false;
+                    elements.fontSize.value = settings.fontSize || '14';
+                    elements.fontFamily.value = settings.fontFamily || 'Consolas, monospace';
+                    elements.syncScroll.checked = settings.syncScroll !== false;
+                    elements.mathSupport.checked = settings.mathSupport || false;
+                    elements.emojiSupport.checked = settings.emojiSupport !== false;
+                    elements.exportTheme.checked = settings.exportTheme !== false;
+                    elements.exportStyles.checked = settings.exportStyles !== false;
+                    elements.exportScripts.checked = settings.exportScripts || false;
+                    
+                    // 載入主題顏色
+                    if (settings.primaryColor) {
+                        document.documentElement.style.setProperty('--primary', settings.primaryColor);
+                    }
+                    if (settings.secondaryColor) {
+                        document.documentElement.style.setProperty('--secondary', settings.secondaryColor);
+                    }
+                    
+                    // 更新顏色選擇器
+                    updateColorPicker();
+                }
+                
+                // 應用設定
+                applySettings();
+            }
+            
+            function saveSettings() {
+                settings = {
+                    autoSave: elements.autoSave.checked,
+                    lineNumbers: elements.lineNumbers.checked,
+                    autoComplete: elements.autoComplete.checked,
+                    fontSize: elements.fontSize.value,
+                    fontFamily: elements.fontFamily.value,
+                    syncScroll: elements.syncScroll.checked,
+                    mathSupport: elements.mathSupport.checked,
+                    emojiSupport: elements.emojiSupport.checked,
+                    exportTheme: elements.exportTheme.checked,
+                    exportStyles: elements.exportStyles.checked,
+                    exportScripts: elements.exportScripts.checked,
+                    primaryColor: getComputedStyle(document.documentElement).getPropertyValue('--primary').trim(),
+                    secondaryColor: getComputedStyle(document.documentElement).getPropertyValue('--secondary').trim()
+                };
+                
+                localStorage.setItem('md-reader-settings', JSON.stringify(settings));
+                applySettings();
+                showMsg('設定已保存');
+            }
+            
+            function resetSettings() {
+                if (confirm('確定要恢復預設設定嗎？')) {
+                    localStorage.removeItem('md-reader-settings');
+                    loadSettings();
+                    showMsg('設定已恢復預設');
+                }
+            }
+            
+            function applySettings() {
+                // 應用字體設定
+                elements.markdownInput.style.fontSize = `${elements.fontSize.value}px`;
+                elements.markdownInput.style.fontFamily = elements.fontFamily.value;
+            }
+            
+            function updateColorPicker() {
+                const currentPrimary = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+                document.querySelectorAll('.color-option').forEach(option => {
+                    const optionColor = option.style.backgroundColor.replace(/rgb\(|\)/g, '').split(',').map(c => parseInt(c.trim()));
+                    const currentColor = currentPrimary.replace(/^#/, '');
+                    
+                    if (rgbToHex(optionColor[0], optionColor[1], optionColor[2]) === currentColor) {
+                        option.classList.add('active');
+                    } else {
+                        option.classList.remove('active');
+                    }
+                });
+            }
+            
+            function rgbToHex(r, g, b) {
+                return ((r << 16) | (g << 8) | b).toString(16).padStart(6, '0');
+            }
+            
+            // 6. 符號面板
+            function initSymbolsPanel() {
+                elements.symbolsGrid.innerHTML = '';
+                
+                symbols.forEach(symbol => {
+                    const button = document.createElement('button');
+                    button.className = 'symbol-btn';
+                    button.textContent = symbol;
+                    button.onclick = () => insertSymbol(symbol);
+                    elements.symbolsGrid.appendChild(button);
+                });
+            }
+            
+            function insertSymbol(symbol) {
+                const textarea = elements.markdownInput;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const text = textarea.value;
+                
+                textarea.value = text.substring(0, start) + symbol + text.substring(end);
+                textarea.selectionStart = textarea.selectionEnd = start + symbol.length;
+                textarea.focus();
+                
+                convertMarkdown();
+                elements.symbolsPanel.classList.remove('active');
+            }
+            
+            // 7. 複製功能
+            elements.copyBtn.onclick = function() {
+                const text = elements.markdownInput.value;
+                if (!text.trim()) {
+                    showMsg('沒有內容', 'warning');
+                    return;
+                }
+                
+                navigator.clipboard.writeText(text)
+                    .then(() => showMsg('已複製到剪貼簿'))
+                    .catch(() => {
+                        // 備用方案
+                        const textarea = document.createElement('textarea');
+                        textarea.value = text;
+                        document.body.appendChild(textarea);
+                        textarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(textarea);
+                        showMsg('已複製');
+                    });
+            };
+            
+            function copyCode(preElement) {
+                const code = preElement.textContent;
+                navigator.clipboard.writeText(code)
+                    .then(() => showMsg('代碼已複製'))
+                    .catch(() => showMsg('複製失敗', 'error'));
+            }
+            
+            // 8. 工具欄
+            const actions = {
+                h1: () => insertText('# ', '標題'),
+                h2: () => insertText('## ', '小標題'),
+                bold: () => insertText('**', '粗體文字', '**'),
+                italic: () => insertText('*', '斜體文字', '*'),
+                link: () => insertText('[', '連結文字', '](https://)'),
+                code: () => insertText('`', '代碼', '`'),
+                clear: () => {
+                    if (confirm('確定清空？')) {
+                        elements.markdownInput.value = '';
+                        convertMarkdown();
+                    }
+                }
+            };
+            
+            function insertText(before, placeholder, after = '') {
+                const textarea = elements.markdownInput;
+                const start = textarea.selectionStart;
+                const end = textarea.selectionEnd;
+                const selected = textarea.value.substring(start, end);
+                
+                textarea.value = textarea.value.substring(0, start) + 
+                               before + (selected || placeholder) + after + 
+                               textarea.value.substring(end);
+                
+                textarea.focus();
+                textarea.selectionStart = start + before.length;
+                textarea.selectionEnd = start + before.length + (selected || placeholder).length;
+                
+                convertMarkdown();
+            }
+            
+            // 綁定工具欄
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const action = btn.dataset.action;
+                    if (actions[action]) actions[action]();
+                };
+            });
+            
+            // 9. 即時預覽
+            let previewTimer;
+            elements.markdownInput.oninput = function() {
+                clearTimeout(previewTimer);
+                previewTimer = setTimeout(convertMarkdown, 300);
+                
+                // 自動保存
+                if (elements.autoSave.checked) {
+                    clearTimeout(autoSaveTimer);
+                    autoSaveTimer = setTimeout(() => {
+                        localStorage.setItem('md-reader-content', elements.markdownInput.value);
+                    }, 1000);
+                }
+            };
+            
+            // 10. 快捷鍵
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+S 保存
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    elements.saveFileBtn.click();
+                }
+                
+                // Ctrl+E 匯出
+                if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+                    e.preventDefault();
+                    elements.exportBtn.click();
+                }
+                
+                // Ctrl+H 主題
+                if ((e.ctrlKey || e.metaKey) && e.key === 'h' && e.shiftKey) {
+                    e.preventDefault();
+                    toggleTheme();
+                }
+                
+                // Ctrl+` 代碼
+                if ((e.ctrlKey || e.metaKey) && e.key === '`') {
+                    e.preventDefault();
+                    insertText('`', '代碼', '`');
+                }
+                
+                // Ctrl+, 設定
+                if ((e.ctrlKey || e.metaKey) && e.key === ',') {
+                    e.preventDefault();
+                    elements.settingsPanel.classList.add('active');
+                }
+            });
+            
+            // 11. 面板控制
+            elements.settingsBtn.onclick = () => elements.settingsPanel.classList.add('active');
+            elements.closeSettingsBtn.onclick = () => elements.settingsPanel.classList.remove('active');
+            elements.symbolsBtn.onclick = () => elements.symbolsPanel.classList.add('active');
+            elements.closeSymbolsBtn.onclick = () => elements.symbolsPanel.classList.remove('active');
+            elements.closeExportBtn.onclick = () => elements.exportModal.classList.remove('active');
+            
+            // 點擊外部關閉面板
+            document.addEventListener('click', (e) => {
+                if (!elements.settingsPanel.contains(e.target) && e.target !== elements.settingsBtn) {
+                    elements.settingsPanel.classList.remove('active');
+                }
+                if (!elements.symbolsPanel.contains(e.target) && e.target !== elements.symbolsBtn) {
+                    elements.symbolsPanel.classList.remove('active');
+                }
+                if (!elements.exportModal.contains(e.target) && !e.target.closest('#exportBtn')) {
+                    elements.exportModal.classList.remove('active');
+                }
+            });
+            
+            // 顏色選擇器
+            elements.colorPicker.addEventListener('click', (e) => {
+                if (e.target.classList.contains('color-option')) {
+                    const primary = e.target.dataset.color;
+                    const secondary = e.target.dataset.secondary;
+                    
+                    document.documentElement.style.setProperty('--primary', primary);
+                    document.documentElement.style.setProperty('--secondary', secondary);
+                    
+                    document.querySelectorAll('.color-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    e.target.classList.add('active');
+                }
+            });
+            
+            // 12. 通知系統
+            function showMsg(message, type = 'success') {
+                elements.notification.textContent = message;
+                elements.notification.className = `notification ${type} show`;
+                
+                setTimeout(() => {
+                    elements.notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            // ========== 初始化 ==========
+            
+            // 設置初始主題
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                elements.themeBtn.querySelector('i').className = 'fas fa-sun';
+            }
+            
+            // 載入設定
+            loadSettings();
+            
+            // 初始化符號面板
+            initSymbolsPanel();
+            
+            // 綁定設定按鈕
+            elements.saveSettingsBtn.onclick = saveSettings;
+            elements.resetSettingsBtn.onclick = resetSettings;
+            elements.themeBtn.onclick = toggleTheme;
+            
+            // 設置初始內容
+            const savedContent = localStorage.getItem('md-reader-content');
+            const defaultContent = `# 歡迎使用 Markdown 閱讀器 Pro！ 📚
+
+## ✨ 完整功能特色
+- **即時預覽**：左邊編輯，右邊立即看到效果
+- **主題切換**：亮色/暗色模式 + 自訂顏色
+- **設定系統**：完整的個人化設定
+- **符號面板**：快速插入特殊符號
+- **HTML 轉 MD**：將HTML轉換為Markdown
+- **多格式匯出**：HTML、Markdown、PDF
+- **自動保存**：內容自動保存到瀏覽器
+
+## 🎯 使用技巧
+1. 使用工具欄快速格式化
+2. 點擊「設定」按鈕自訂外觀
+3. 使用「符號」按鈕插入特殊字符
+4. 支援將HTML轉換為Markdown格式
+5. 所有設定都會自動保存
+
+## 🎨 設定選項
+- 編輯器設定（自動保存、行號等）
+- 主題顏色（8種預設顏色）
+- 字體設定（大小、家族）
+- 預覽設定（同步滾動、數學公式等）
+
+\`\`\`javascript
+// 代碼高亮範例
+function greet(name) {
+    console.log(\`Hello, \${name}!\`);
+    return \`Welcome to Markdown Reader Pro!\`;
+}
+\`\`\`
+
+> **提示**：試試看「HTML 轉 Markdown」功能，可以將網頁內容轉換為Markdown格式！
+
+**開始創作吧！** ✍️`;
+            
+            elements.markdownInput.value = savedContent || defaultContent;
+            convertMarkdown();
+            
+            // 檢查庫是否加載成功
+            setTimeout(() => {
+                if (typeof marked === 'undefined') {
+                    console.warn('marked.js 未加載，使用簡易模式');
+                }
+                if (typeof hljs === 'undefined') {
+                    console.warn('highlight.js 未加載，代碼高亮不可用');
+                }
+            }, 1000);
+            
+            showMsg('Markdown 閱讀器 Pro 已就緒！');
+        });
+    </script>
+</body>
+</html>
