@@ -1,0 +1,17 @@
+<textarea id="editor" spellcheck="false">
+def("myArt", x, y){
+log("正在座標繪製:", %x%, ",", %y%);
+canva(set, %x%, %y%, "ffffff");
+}
+canva(add, 5, 5);
+sv(%"i"%, 0);
+rep(F, 5){
+myArt(%i% + 1, %i%);
+sv(%"i"%, %i% + 1);
+}
+sv(%"i"%, 0);
+rep(F, 5){
+myArt(%i%, %i% + 1);
+sv(%"i"%, %i% + 1);
+}
+log("繪製完成！");</textarea>

@@ -1,80 +1,68 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>EJP Web IDE</title>
-    
-    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
-    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/mode/simple.min.js"></script>
-
-    <style>
-        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #282a36; color: white; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .toolbar { background: #44475a; padding: 10px 20px; display: flex; gap: 12px; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); z-index: 10; }
-        .main { display: flex; flex: 1; overflow: hidden; }
-        .editor-container { flex: 1; display: flex; flex-direction: column; border-right: 1px solid #44475a; }
-        .CodeMirror { flex: 1; height: auto; font-size: 16px; line-height: 1.5; }
+    <head>
+        <meta charset="UTF-8">
+        <title>EJP Web IDE | Dracula Edition</title>
         
-        /* 預覽與控制台 */
-        .preview { width: 420px; background: #282a36; display: flex; flex-direction: column; }
-        #display-canvas { background: #1a1a1a; margin: 15px; height: 320px; border-radius: 8px; display: grid; border: 2px solid #6272a4; overflow: hidden; position: relative; }
-        #console { flex: 1; background: #000; color: #50fa7b; padding: 12px; font-size: 13px; overflow-y: auto; font-family: 'Fira Code', 'Consolas', monospace; border-top: 4px solid #44475a; }
+        <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+        <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
         
-        /* 按鈕樣式 */
-        button { background: #6272a4; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 13px; }
-        button:hover { background: #bd93f9; transform: translateY(-1px); }
-        .btn-run { background: #50fa7b; color: #282a36; }
-        .btn-run:hover { background: #69ff94; }
-        .btn-compile { background: #ff79c6; color: white; }
-        .filename-input { background: #282a36; border: 1px solid #6272a4; color: #f8f8f2; padding: 6px 10px; border-radius: 4px; width: 140px; outline: none; }
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/mode/simple.min.js"></script>
         
-        .grid-pixel { border: 0.1px solid rgba(255,255,255,0.05); box-sizing: border-box; }
-    </style>
-</head>
-<body>
-
-<div class="toolbar">
-    <strong style="color: #dbdbdb; margin-right: 10px;">EJP IDE</strong>
-    <input type="text" id="filename" class="filename-input" value="project.EJP">
-    <button onclick="downloadSource()">💾 儲存</button>
-    <button class="btn-compile" id="compile-btn" py-click="compile_code">📦 編譯</button>
-    <button class="btn-run" id="run-btn" py-click="run_code">▶ 執行</button>
-    <div style="margin-left: auto; font-size: 11px; opacity: 0.5;">online IDE</div>
-</div>
-
-<div class="main">
-    <div class="editor-container">
-        <textarea id="editor-text">## EJP 函數與 rep 循環測試 ##
-## 目的：在 5x5 畫布畫出一條對角線 ##
-
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        
+        <div class="toolbar">
+            <div class="logo-text">EJP IDE</div>
+            <input type="text" id="filename" class="filename-input" value="project.EJP">
+            
+            <button onclick="downloadSource()">
+                <div class="icon-save"></div> 儲存
+            </button>
+            
+            <button class="btn-compile" id="compile-btn" py-click="compile_code">
+                <strong>&lt;/&gt;</strong> 編譯
+            </button>
+            
+            <button class="btn-run" id="run-btn" py-click="run_code">
+                <div class="icon-play"></div> 執行
+            </button>
+            
+            <div style="margin-left: auto; font-size: 11px; opacity: 0.5;">v1.0beta Online</div>
+        </div>
+        
+        <div class="main">
+            <div class="editor-container">
+                <textarea id="editor-text">
 def("myArt", x, y){
-    log("正在座標繪製:", %x%, ",", %y%);
-    canva(set, %x%, %y%, "ff79c6");
+log("正在座標繪製:", %x%, ",", %y%);
+canva(set, %x%, %y%, "ffffff");
 }
-
 canva(add, 5, 5);
 sv(%"i"%, 0);
-
 rep(F, 5){
-    myArt(%i%, %i%);
-    sv(%"i"%, %i% + 1);
+myArt(%i% + 1, %i%);
+sv(%"i"%, %i% + 1);
 }
-
+sv(%"i"%, 0);
+rep(F, 5){
+myArt(%i%, %i% + 1);
+sv(%"i"%, %i% + 1);
+}
 log("繪製完成！");</textarea>
-    </div>
-    
-    <div class="preview">
-        <div id="display-canvas"></div>
-        <div id="console"></div>
-    </div>
-</div>
-
-<script type="py">
+                </div>
+                
+                <div class="preview">
+                    <div id="display-canvas"></div>
+                    <div id="console"></div>
+                </div>
+            </div>
+            <script type="py">
 from pyscript import document, window
 import re
 
@@ -91,22 +79,34 @@ def web_canva(action, *args):
     if action == "add":
         canvas_div.innerHTML = ""
         w, h = int(args[0]), int(args[1])
-        canvas_div.style.gridTemplateColumns = f"repeat({w}, 1fr)"
-        canvas_div.style.gridTemplateRows = f"repeat({h}, 1fr)"
-        canvas_div.dataset.cols = w
-        for _ in range(w * h):
-            d = document.createElement("div")
-            d.className = "grid-pixel"
-            canvas_div.appendChild(d)
+        canvas_div.dataset.cols = str(w)
+        canvas_div.dataset.rows = str(h)
+        
+        # 配合 column-reverse，我們由下往上建立「行 (Row)」
+        # 每一行包含 w 個像素
+        for y in range(h):
+            row_div = document.createElement("div")
+            row_div.className = "canvas-row"
+            row_div.id = f"row-{y}"
+            for x in range(w):
+                pixel = document.createElement("div")
+                pixel.className = "grid-pixel"
+                pixel.id = f"p-{x}-{y}" # 為每個像素標記座標 ID
+                row_div.appendChild(pixel)
+            canvas_div.appendChild(row_div)
+            
     elif action == "set":
         x, y, color = int(args[0]), int(args[1]), str(args[2]).strip("'").strip('"')
         if len(color) == 3: color = "".join([c*2 for c in color])
-        cells = canvas_div.children
-        cols = int(canvas_div.dataset.cols)
-        idx = y * cols + x
-        if 0 <= idx < len(cells):
-            cells[idx].style.backgroundColor = f"#{color}"
-            cells[idx].style.boxShadow = f"inset 0 0 5px #{color}, 0 0 10px #{color}"
+        
+        # 直接透過座標 ID 找到該像素，精準且不會變形
+        pixel_id = f"p-{x}-{y}"
+        target_pixel = document.getElementById(pixel_id)
+        
+        if target_pixel:
+            target_pixel.style.backgroundColor = f"#{color}"
+            # 加入 Dracula 風格的高光感
+            target_pixel.style.boxShadow = f"inset 0 0 5px #{color}, 0 0 10px #{color}"
 
 def run_code(event):
     document.getElementById("console").innerHTML = ""
@@ -195,49 +195,7 @@ def compile_code(event):
     log_to_console(f"二進位檔案已匯出: {fname}")
 </script>
 
-<script>
-    // CodeMirror Custom Mode
-    CodeMirror.defineSimpleMode("ejp", {
-        start: [
-            {regex: /##.*/, token: "comment"},
-            {regex: /"(?:[^\\]|\\.)*?"/, token: "string"},
-            {regex: /(?:def|sv|rep|canva|log)(?=\()/, token: "keyword"},
-            {regex: /[a-zA-Z0-9_]+(?=\()/, token: "variable-3"}, 
-            {regex: /%[a-zA-Z0-9_-]+%/, token: "variable-2"},
-            {regex: /\{/, indent: true},
-            {regex: /\}/, dedent: true}
-        ]
-    });
-
-    var editor = CodeMirror.fromTextArea(document.getElementById("editor-text"), {
-        lineNumbers: true,
-        mode: "ejp",
-        theme: "dracula",
-        tabSize: 4,
-        indentUnit: 4,
-        lineWrapping: true,
-        matchBrackets: true
-    });
-    window.editor = editor;
-
-    function downloadSource() {
-        const text = window.editor.getValue();
-        const blob = new Blob([text], { type: 'text/plain' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = document.getElementById('filename').value;
-        a.click();
-    }
-
-    window.saveBinaryFile = function(pyBytearray, filename) {
-        const uint8Array = new Uint8Array(pyBytearray);
-        const blob = new Blob([uint8Array], { type: 'application/octet-stream' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = filename;
-        a.click();
-    }
-</script>
+<script src="script.js"></script>
 
 </body>
 </html>

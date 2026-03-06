@@ -1,0 +1,142 @@
+/* Dracula 配色變數 */
+:root {
+    --bg: #282a36;
+    --current-line: #44475a;
+    --selection: #44475a;
+    --foreground: #f8f8f2;
+    --comment: #6272a4;
+    --cyan: #8be9fd;
+    --green: #50fa7b;
+    --orange: #ffb86c;
+    --pink: #ff79c6;
+    --purple: #bd93f9;
+    --red: #ff5555;
+    --yellow: #f1fa8c;
+}
+
+body { 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+    height: 100vh; 
+    background: var(--bg); 
+    color: var(--foreground); 
+    overflow: hidden; 
+    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
+}
+
+/* 頂部工具列 */
+.toolbar { 
+    background: var(--current-line); 
+    padding: 10px 20px; 
+    display: flex; 
+    gap: 12px; 
+    align-items: center; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+    z-index: 10; 
+}
+
+.logo-text {
+    font-weight: 800;
+    color: var(--purple);
+    margin-right: 15px;
+    letter-spacing: 1px;
+}
+
+/* 按鈕樣式與圖標 */
+button { 
+    background: var(--comment); 
+    color: white; 
+    border: none; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    transition: 0.2s; 
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+button:hover { background: var(--purple); transform: translateY(-1px); }
+
+.btn-run { background: var(--green); color: #282a36; }
+.btn-run:hover { background: #69ff94; }
+
+.btn-compile { background: var(--pink); color: white; }
+
+/* 純 CSS 圖標 */
+.icon-play { width: 0; height: 0; border-top: 6px solid transparent; border-left: 10px solid #282a36; border-bottom: 6px solid transparent; }
+.icon-save { width: 10px; height: 10px; border: 2px solid white; position: relative; }
+.icon-save::after { content: ""; position: absolute; top: 0; right: 1px; width: 4px; height: 3px; background: white; }
+
+.filename-input { 
+    background: var(--bg); 
+    border: 1px solid var(--comment); 
+    color: var(--foreground); 
+    padding: 6px 10px; 
+    border-radius: 4px; 
+    width: 140px; 
+    outline: none; 
+    font-family: monospace;
+}
+
+/* 主區域佈局 */
+.main { display: flex; flex: 1; overflow: hidden; }
+
+.editor-container { 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    border-right: 1px solid var(--current-line); 
+}
+
+.CodeMirror { flex: 1; height: auto; font-size: 16px; line-height: 1.5; }
+
+/* 預覽與控制台 */
+.preview { 
+    width: 420px; 
+    background: var(--bg); 
+    display: flex; 
+    flex-direction: column; 
+}
+
+/* 核心修復：(0,0) 左下角 */
+#display-canvas { 
+    background: #1a1a1a; 
+    margin: 15px; 
+    aspect-ratio: 1/1; /* 保持正方形比例 */
+    border-radius: 8px; 
+    display: flex; 
+    flex-direction: column-reverse; /* 重要：讓 y=0 的 row 在底部 */
+    border: 2px solid var(--comment); 
+    overflow: hidden; 
+    position: relative; 
+}
+
+.canvas-row {
+    display: flex;
+    flex: 1;
+}
+
+.grid-pixel { 
+    flex: 1;
+    border: 0.1px solid rgba(255,255,255,0.05); 
+    box-sizing: border-box; 
+}
+
+#console { 
+    flex: 1; 
+    background: #000; 
+    color: var(--green); 
+    padding: 12px; 
+    font-size: 13px; 
+    overflow-y: auto; 
+    font-family: 'Fira Code', 'Consolas', monospace; 
+    border-top: 4px solid var(--current-line); 
+}
+
+/* 捲軸美化 */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--comment); border-radius: 4px; }

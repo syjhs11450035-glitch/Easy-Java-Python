@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>EJP</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+<!-- <a href="../IDE/index.html" class="floating-btn">🚀 進入 IDE</a> -->
+
+<div class="content-container" id="md-content">
+    <!-- <h1>EJP 核心文檔導覽</h1>
+    <p>請選擇您想查看的章節：</p>
+    <ul>
+        <li>
+            <a href="?file=https://syjhs11450035-glitch.github.io/Easy-Java-Python/md/安裝.md">🛠️ 安裝指南</a><br>
+            <small style="opacity: 0.7;">環境配置、依賴庫安裝與啟動說明。</small>
+        </li>
+        <li>
+            <a href="?file=https://syjhs11450035-glitch.github.io/Easy-Java-Python/md/如何編寫.md">📜 如何編寫</a><br>
+            <small style="opacity: 0.7;">EJP 語法全手冊、py{} 塊與自定義函數。</small>
+        </li>
+        <li>
+            <a href="?file=https://syjhs11450035-glitch.github.io/Easy-Java-Python/md/運作原理.md">🧠 運作原理</a><br>
+            <small style="opacity: 0.7;">轉譯邏輯、作用域管理與 6-bit 壓縮技術。</small>
+        </li>
+    </ul> -->
+</div>
+
+<script>
+    async function loadMarkdown() {
+        const urlParams = new URLSearchParams(window.location.search);
+        let filePath = urlParams.get('file');
+
+        // 如果 URL 有 file 參數，才執行 fetch 替換內容
+        if (filePath) {
+            const container = document.getElementById('md-content');
+            container.innerHTML = "正在載入文檔...";
+            
+            try {
+                const response = await fetch(filePath);
+                if (!response.ok) throw new Error("找不到檔案");
+                
+                const text = await response.text();
+                
+                // 渲染 Markdown
+                container.innerHTML = marked.parse(text);
+                
+                // 加入一個「返回導覽」的按鈕
+                const backBtn = document.createElement('div');
+                // backBtn.innerHTML = `<hr><a href="index.html" style="display:inline-block; margin-top:20px;">⬅️ 返回文檔清單</a>`;
+                container.appendChild(backBtn);
+
+                document.title = "EJP | " + filePath.split('/').pop().replace('', '');
+
+            } catch (error) {
+                container.innerHTML = `<h2>⚠️ 載入失敗</h2><p>無法讀取：${filePath}`;
+            }
+        }
+        else {
+            window.location.replace("./index.html?file=https://syjhs11450035-glitch.github.io/Easy-Java-Python/README.md");
+        }
+    }
+
+    window.onload = loadMarkdown;
+</script>
+
+</body>
+</html>

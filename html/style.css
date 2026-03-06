@@ -1,0 +1,85 @@
+:root {
+    --bg: #282a36;
+    --current-line: #44475a;
+    --foreground: #f8f8f2;
+    --comment: #6272a4;
+    --cyan: #8be9fd;
+    --green: #50fa7b;
+    --pink: #ff79c6;
+    --purple: #bd93f9;
+}
+
+body {
+    font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+    line-height: 1.7;
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--foreground);
+}
+
+/* 內容容器 */
+.content-container {
+    max-width: 850px;
+    margin: 40px auto;
+    background: #2d2f3b;
+    padding: 50px;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    border: 1px solid var(--current-line);
+}
+
+/* Markdown 標題樣式 */
+h1, h2, h3 { color: var(--purple); margin-top: 1.5em; }
+h1 { border-bottom: 2px solid var(--purple); padding-bottom: 10px; text-align: center; }
+
+/* 連結樣式 */
+a { color: var(--cyan); text-decoration: none; transition: 0.2s; }
+a:hover { color: var(--pink); text-decoration: underline; }
+
+/* 特殊列表樣式 (針對你的導覽需求) */
+ul { list-style: none; padding: 0; }
+li { 
+    background: var(--current-line);
+    margin-bottom: 15px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border-left: 5px solid var(--pink);
+    transition: transform 0.2s;
+}
+li:hover { transform: translateX(10px); background: #4d5166; }
+
+/* 區塊引用 */
+blockquote {
+    border-left: 4px solid var(--green);
+    background: rgba(80, 250, 123, 0.1);
+    margin: 20px 0;
+    padding: 15px 20px;
+    border-radius: 0 8px 8px 0;
+}
+
+/* 代碼塊樣式 */
+pre {
+    background: #1a1b26;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    border: 1px solid var(--comment);
+}
+code { font-family: 'Fira Code', 'Consolas', monospace; color: var(--yellow); }
+
+/* 圖片樣式 */
+img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+
+/* 回到 IDE 的按鈕浮動在右下角 */
+.floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--green);
+    color: var(--bg);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 1000;
+}
