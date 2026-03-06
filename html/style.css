@@ -11,75 +11,120 @@
 
 body {
     font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-    line-height: 1.7;
-    margin: 0;
     background-color: var(--bg);
     color: var(--foreground);
+    display: flex;
+    justify-content: center;
+    padding: 40px 20px;
 }
 
-/* 內容容器 */
 .content-container {
-    max-width: 850px;
-    margin: 40px auto;
+    max-width: 800px;
+    width: 100%;
     background: #2d2f3b;
-    padding: 50px;
-    border-radius: 12px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    padding: 40px;
+    border-radius: 15px;
     border: 1px solid var(--current-line);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
 }
 
-/* Markdown 標題樣式 */
-h1, h2, h3 { color: var(--purple); margin-top: 1.5em; }
-h1 { border-bottom: 2px solid var(--purple); padding-bottom: 10px; text-align: center; }
+/* 清單容器與間距 */
+ul { 
+    list-style: none; 
+    padding: 0; 
+    margin-top: 30px; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 這裡解決了連在一起的問題 */
+}
 
-/* 連結樣式 */
-a { color: var(--cyan); text-decoration: none; transition: 0.2s; }
-a:hover { color: var(--pink); text-decoration: underline; }
+/* 讓 a 包裹整個 li 並產生點擊感 */
+ul a {
+    text-decoration: none;
+    display: block;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-/* 特殊列表樣式 (針對你的導覽需求) */
-ul { list-style: none; padding: 0; }
-li { 
+ul li {
     background: var(--current-line);
-    margin-bottom: 15px;
-    padding: 15px 20px;
-    border-radius: 8px;
-    border-left: 5px solid var(--pink);
-    transition: transform 0.2s;
-}
-li:hover { transform: translateX(10px); background: #4d5166; }
-
-/* 區塊引用 */
-blockquote {
-    border-left: 4px solid var(--green);
-    background: rgba(80, 250, 123, 0.1);
-    margin: 20px 0;
-    padding: 15px 20px;
-    border-radius: 0 8px 8px 0;
-}
-
-/* 代碼塊樣式 */
-pre {
-    background: #1a1b26;
     padding: 20px;
     border-radius: 10px;
-    overflow-x: auto;
-    border: 1px solid var(--comment);
+    border-left: 5px solid var(--pink);
+    color: var(--foreground);
+    cursor: pointer;
 }
-code { font-family: 'Fira Code', 'Consolas', monospace; color: var(--yellow); }
 
-/* 圖片樣式 */
-img { max-width: 100%; border-radius: 8px; margin: 10px 0; }
+ul a:hover { transform: translateX(10px); }
+ul a:hover li { background: #4d5166; border-left-color: var(--cyan); }
 
-/* 回到 IDE 的按鈕浮動在右下角 */
-.floating-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: var(--green);
-    color: var(--bg);
-    padding: 12px 24px;
-    border-radius: 50px;
+li strong { color: var(--cyan); font-size: 1.15em; display: inline-block; margin-bottom: 5px; }
+li br + em { color: var(--comment); font-style: normal; display: block; font-size: 0.9em; margin-top: 5px; }
+
+/* 底部導覽列 */
+.nav-footer {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid var(--current-line);
+    display: flex;
+    gap: 20px;
+}
+
+.nav-footer a {
+    color: var(--cyan);
+    text-decoration: none;
+    font-size: 0.9em;
     font-weight: bold;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 1000;
+}
+.nav-footer a:hover { color: var(--pink); }
+
+#nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 這裡產生卡片之間的間距 */
+    padding: 0;
+    margin: 20px 0;
+}
+
+#nav-list a {
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+#nav-list li {
+    background: #44475a;
+    padding: 18px;
+    border-radius: 10px;
+    border-left: 5px solid #ff79c6;
+    color: #f8f8f2;
+}
+
+#nav-list a:hover li {
+    background: #6272a4;
+    transform: translateX(8px);
+}
+
+/* 如果你在 Markdown 寫 [⬅ 回到首頁](./README.md)，它會套用這個樣式 */
+#md-content a {
+    color: #8be9fd;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+#md-content a:hover {
+    color: #ff79c6;
+}
+
+/* 讓 Markdown 裡的列表變成間距整齊的卡片 */
+#md-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+#md-content li {
+    background: #44475a;
+    margin: 10px 0;
+    padding: 12px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #bd93f9;
 }

@@ -5,10 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown 閱讀器 Pro - 完整版</title>
-    
-    <!-- ========== 線上資源 + 本地備份 ========== -->
-    <!-- 雙重保障：線上CDN + 本地備份 -->
-    
+    <script src="/js/favicon.js"></script>
+
     <!-- 1. Font Awesome 圖標 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
           onerror="this.onerror=null;this.href='./Font Awesome.css';">
@@ -608,7 +606,7 @@
         <header>
             <div class="logo">
                 <i class="fas fa-book-reader"></i>
-                <h1>Markdown 閱讀器 Pro</h1>
+                <h1>Markdown 閱讀器</h1>
             </div>
             <div class="controls">
                 <button class="btn btn-primary" id="openFileBtn">
@@ -655,7 +653,7 @@
             <div class="output-section">
                 <div class="section-header">
                     <h2><i class="fas fa-eye"></i>預覽區</h2>
-                    <div class="file-info">即時更新</div>
+                    <div class="file-info">即時</div>
                 </div>
                 <div id="markdownOutput" class="output-area">
                     <div class="loading">準備中...</div>
@@ -664,7 +662,7 @@
         </div>
         
         <footer>
-            <p>Markdown 閱讀器 Pro | 完整版 | 雙重資源保障</p>
+            <p>Markdown 閱讀器</p>
         </footer>
     </div>
     
@@ -796,8 +794,8 @@
                 <select id="exportFormat" class="form-control">
                     <option value="html">HTML 文件</option>
                     <option value="markdown">Markdown 文件</option>
-                    <option value="html-to-md">HTML 轉 Markdown</option>
-                    <option value="pdf">PDF 文件</option>
+                    <!-- <option value="html-to-md">HTML 轉 Markdown</option> -->
+                    <!-- <option value="pdf">PDF 文件</option> -->
                 </select>
             </div>
             
