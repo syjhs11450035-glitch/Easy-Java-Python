@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<body style="background:#0d1117; color:white; font-family:sans-serif; padding:20px;">
+    <h2>EJP 金鑰加密工具</h2>
+    <p>輸入 GitHub Token (ghp_...):</p>
+    <input type="text" id="t" style="width:100%; padding:8px;">
+    <p>輸入 6 位數加密密鑰:</p>
+    <input type="text" id="p" maxlength="6" style="padding:8px;">
+    <button onclick="gen()" style="padding:8px 20px; cursor:pointer;">產生加密內容</button>
+    
+    <p>產生的內容 (請複製到 KEY.key):</p>
+    <textarea id="out" style="width:100%; height:100px; background:#161b22; color:#7ee787; border:1px solid #30363d; padding:10px;" readonly></textarea>
+
+    <script>
+        function gen() {
+            const t = document.getElementById('t').value;
+            const p = document.getElementById('p').value;
+            if(!t || !p) return alert("請填寫完整");
+            
+            // XOR 邏輯
+            const secretXOR = (text, key) => text.split('').map((char, i) => 
+                String.fromCharCode(char.charCodeAt(0) ^ key.charCodeAt(i % key.length))
+            ).join('');
+            
+            // 加密並轉 Base64
+            const result = btoa(secretXOR(t, p));
+            document.getElementById('out').value = result;
+        }
+    </script>
+</body>
+</html>

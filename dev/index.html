@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Dev Console | EJP Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/favicon.js"></script>
+    <style>
+        body { background: #0d1117; color: #c9d1d9; font-family: -apple-system, sans-serif; }
+        .glass-card { background: #161b22; border: 1px solid #30363d; border-radius: 8px; height: 100%; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+        
+        /* 全螢幕解鎖介面 (灰色半透明) */
+        #master-auth {
+            position: fixed; inset: 0; background: rgba(22, 27, 34, 0.9);
+            z-index: 100; display: none; align-items: center; justify-content: center;
+            backdrop-filter: grayscale(1) blur(2px);
+        }
+
+        /* 區塊鎖定遮罩 */
+        .div-lock { 
+            position: absolute; inset: 0; background: rgba(30, 35, 45, 0.85); 
+            backdrop-filter: blur(4px); z-index: 20; display: flex; 
+            flex-direction: column; align-items: center; justify-content: center; 
+        }
+
+        .lang-progress-container { height: 10px; display: flex; border-radius: 5px; overflow: hidden; background: #30363d; margin-bottom: 12px; }
+        .lang-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+        .chart-wrapper { position: relative; flex-grow: 1; min-height: 180px; width: 100%; }
+        
+        input { background: #0d1117; border: 1px solid #30363d; color: white; padding: 8px; border-radius: 4px; outline: none; }
+        input:focus { border-color: #58a6ff; }
+        .btn-ui { padding: 6px 16px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div id="master-auth">
+        <div class="text-center p-10 bg-[#161b22] border border-[#30363d] rounded-xl shadow-2xl w-96">
+            <h2 class="text-lg font-bold mb-6 text-white tracking-widest italic uppercase">EJP Security</h2>
+            <input type="password" id="pin-input" maxlength="6" class="w-full text-center text-2xl tracking-[0.5em] mb-8" placeholder="******" autofocus>
+            <div class="flex gap-3">
+                <button onclick="closeAuth()" class="btn-ui bg-gray-800 text-gray-400 w-1/2 hover:bg-gray-700">取消</button>
+                <button onclick="validateEJP()" class="btn-ui bg-blue-600 text-white w-1/2 hover:bg-blue-500">驗證</button>
+            </div>
+        </div>
+    </div>
+
+    <header class="mb-8 flex justify-between items-center border-b border-[#30363d] pb-4">
+        <h1 class="text-2xl font-semibold text-white tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">EJP Developer Station</h1>
+        <div id="repo-stars" class="text-yellow-500 font-medium font-mono text-sm">⭐ -- Stars</div>
+    </header>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 items-stretch">
+        <div class="glass-card p-4 md:col-span-2">
+            <div id="traffic-lock" class="div-lock">
+                <div class="flex gap-2">
+                    <button onclick="openAuth()" class="btn-ui bg-white text-black hover:bg-gray-200">解鎖真實數據</button>
+                </div>
+            </div>
+            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4 tracking-wider font-mono italic">Activity Insights</h4>
+            <div class="chart-wrapper">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="glass-card p-4">
+            <h4 class="text-xs font-bold text-gray-500 uppercase mb-4 tracking-wider font-mono italic">Repo Languages</h4>
+            <div id="lang-bar" class="lang-progress-container"></div>
+            <div id="lang-list" class="grid grid-cols-1 gap-2 text-[12px]"></div>
+        </div>
+    </div>
+
+    <section class="glass-card p-6 shadow-xl border-t-2 border-blue-600">
+        <h3 class="text-lg font-semibold text-gray-400 mb-6 flex items-center gap-2">
+            <span>📦 自動化部屬助手</span>
+            <span class="text-[10px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded uppercase font-mono">No-Hash Mode</span>
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] text-gray-500 font-bold uppercase">變更說明</label>
+                <input type="text" id="dev-desc" placeholder="輸入說明...">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] text-gray-500 font-bold uppercase">日期 (自動)</label>
+                <input type="text" id="dev-date" readonly class="opacity-60 cursor-not-allowed">
+            </div>
+            <div class="flex flex-col gap-1">
+                <label class="text-[10px] text-gray-500 font-bold uppercase">序號 (自動)</label>
+                <input type="text" id="dev-seq" readonly class="opacity-60 cursor-not-allowed">
+            </div>
+        </div>
+        <div class="bg-[#0d1117] p-4 rounded border border-[#30363d]">
+            <code id="git-command" class="text-[#7ee787] text-xs font-mono block mb-4 break-all"></code>
+            <button onclick="copyGitCommand()" class="bg-[#21262d] text-[#c9d1d9] border border-[#30363d] px-4 py-1.5 rounded text-sm hover:bg-[#30363d] transition-colors">📋 複製部屬指令</button>
+        </div>
+    </section>
+
+    <script>
+        const REPO = "syjhs11450035-glitch/Easy-Java-Python";
+        const COLORS = { HTML: '#e34c26', JavaScript: '#f1e05a', Python: '#3572A5', CSS: '#563d7c' };
+        let myChart = null;
+
+        function openAuth() { document.getElementById('master-auth').style.display = 'flex'; document.getElementById('pin-input').focus(); }
+        function closeAuth() { document.getElementById('master-auth').style.display = 'none'; }
+
+        // 🛡️ EJP 正向編譯器 (將 333636 轉為二進位特徵)
+        function compileToEJP(plainPin) {
+            const ejpBytes = new Uint8Array(6);
+            if (plainPin === "333636") {
+                // 對應檔案中的 [75 d7 60 76 01 87]
+                ejpBytes[0] = 0x75; ejpBytes[1] = 0xd7; ejpBytes[2] = 0x60;
+                ejpBytes[3] = 0x76; ejpBytes[4] = 0x01; ejpBytes[5] = 0x87;
+            } else {
+                for (let i = 0; i < 6; i++) ejpBytes[i] = plainPin.charCodeAt(i) || 0;
+            }
+            return ejpBytes;
+        }
+
+        async function validateEJP() {
+            const inputPin = document.getElementById('pin-input').value;
+            try {
+                const response = await fetch('/dev/key');
+                const buffer = await response.arrayBuffer();
+                const fileBytes = new Uint8Array(buffer);
+                
+                // 自動分離：前 6 位比對密碼，第 7 位起為 Token
+                const filePinPart = fileBytes.slice(0, 6);
+                const hashedInput = compileToEJP(inputPin);
+
+                const isMatch = hashedInput.every((val, index) => val === filePinPart[index]);
+
+                if (isMatch) {
+                    // 自動去除前 6 位，取得後方 Token
+                    const tokenPart = new TextDecoder().decode(fileBytes.slice(6)).trim();
+                    document.getElementById('traffic-lock').style.display = 'none';
+                    closeAuth();
+                    loadRealTraffic(tokenPart);
+                } else {
+                    alert("EJP 驗證失敗：解譯結果不匹配");
+                    document.getElementById('pin-input').value = "";
+                }
+            } catch (err) { alert("無法讀取 /dev/key"); }
+        }
+
+        async function initDashboard() {
+            try {
+                const repoData = await (await fetch(`https://api.github.com/repos/${REPO}`)).json();
+                document.getElementById('repo-stars').innerText = `⭐ ${repoData.stargazers_count} Stars`;
+                
+                const langData = await (await fetch(`https://api.github.com/repos/${REPO}/languages`)).json();
+                renderLangBar(langData);
+
+                // 自動日期
+                const now = new Date();
+                const YYMMDD = now.getFullYear().toString().slice(-2) + 
+                               (now.getMonth() + 1).toString().padStart(2, '0') + 
+                               now.getDate().toString().padStart(2, '0');
+                document.getElementById('dev-date').value = YYMMDD;
+                
+                // 自動序號 (Commit 數)
+                const linkHeader = (await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=1`)).headers.get("Link");
+                document.getElementById('dev-seq').value = linkHeader ? linkHeader.match(/page=(\d+)>; rel="last"/)[1].padStart(2, '0') : "01";
+
+                renderChart(false);
+                initGitUpdateLogic();
+            } catch (err) { console.error(err); }
+        }
+
+        function initGitUpdateLogic() {
+            const desc = document.getElementById('dev-desc');
+            const date = document.getElementById('dev-date');
+            const seq = document.getElementById('dev-seq');
+            const cmd = document.getElementById('git-command');
+            const update = () => {
+                // 🚀 格式：說明 日期 - 序號 (無#)
+                cmd.innerText = `git add . && git commit -m "${desc.value || "update"} ${date.value} - ${seq.value}" && git push origin main`;
+            };
+            desc.addEventListener('input', update);
+            update();
+        }
+
+        function renderLangBar(data) {
+            const bar = document.getElementById('lang-bar');
+            const list = document.getElementById('lang-list');
+            const total = Object.values(data).reduce((a, b) => a + b, 0);
+            bar.innerHTML = ''; list.innerHTML = '';
+            Object.entries(data).forEach(([lang, val]) => {
+                const percent = (val / total * 100).toFixed(1);
+                const color = COLORS[lang] || '#8b949e';
+                const segment = document.createElement('div');
+                segment.style.width = `${percent}%`; segment.style.backgroundColor = color;
+                bar.appendChild(segment);
+                list.innerHTML += `<div class="flex items-center"><span class="lang-dot" style="background:${color}"></span><span class="font-bold text-white mr-2">${lang}</span> <span class="text-gray-500">${percent}%</span></div>`;
+            });
+        }
+
+        function renderChart(isReal, labels, data) {
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels || ["03-01", "03-02", "03-03", "03-04", "03-05"],
+                    datasets: [{
+                        data: data || [5, 12, 8, 15, 10],
+                        borderColor: isReal ? '#58a6ff' : '#444c56',
+                        backgroundColor: isReal ? 'rgba(88, 166, 255, 0.05)' : 'transparent',
+                        fill: true, tension: 0.4, pointRadius: 2
+                    }]
+                },
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { y: { display: false }, x: { grid: { color: '#161b22' }, ticks: { color: '#484f58', font: { size: 9 } } } }
+                }
+            });
+        }
+
+        async function loadRealTraffic(token) {
+            try {
+                const res = await fetch(`https://api.github.com/repos/${REPO}/traffic/views`, {
+                    headers: { "Authorization": `token ${token}` }
+                });
+                const data = await res.json();
+                renderChart(true, data.views.map(v => v.timestamp.split('T')[0].slice(5)), data.views.map(v => v.uniques));
+            } catch (err) { renderChart(false); }
+        }
+
+        function copyGitCommand() { navigator.clipboard.writeText(document.getElementById('git-command').innerText); alert("指令已複製！"); }
+        document.getElementById('pin-input').addEventListener('keypress', (e) => { if(e.key === 'Enter') validateEJP(); });
+        window.onload = initDashboard;
+    </script>
+</body>
+</html>
